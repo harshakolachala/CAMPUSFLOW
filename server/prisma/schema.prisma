@@ -1,0 +1,263 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = "file:./dev.db"
+}
+
+model User {
+  id        String   @id @default(uuid())
+  email     String   @unique
+  password  String
+  name      String
+  role      String   // student, faculty, admin, seating_manager, club_coordinator
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  
+  // Relations
+  events       Event[]
+  seatingPlans SeatingPlan[]
+  studentProfile StudentProfile?
+  facultyProfile FacultyProfile?
+}
+
+model StudentProfile {
+  id                String   @id @default(uuid())
+  userId            String   @unique
+  user              User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  // Personal Information
+  firstName         String
+  lastName          String
+  middleName        String?
+  dateOfBirth       DateTime
+  gender            String
+  bloodGroup        String?
+  nationality       String
+  religion          String?
+  category          String   // General, OBC, SC, ST, etc.
+  
+  // Contact Information
+  phoneNumber       String
+  alternatePhone    String?
+  personalEmail     String?
+  permanentAddress  String
+  currentAddress    String
+  city              String
+  state             String
+  pincode           String
+  country           String   @default("India")
+  
+  // Academic Information
+  studentId         String   @unique
+  rollNumber        String   @unique
+  admissionNumber   String   @unique
+  admissionDate     DateTime
+  course            String
+  branch            String
+  semester          Int
+  section           String?
+  batch             String
+  academicYear      String
+  
+  // Guardian Information
+  fatherName        String
+  fatherOccupation  String?
+  fatherPhone       String?
+  motherName        String
+  motherOccupation  String?
+  motherPhone       String?
+  guardianName      String?
+  guardianRelation  String?
+  guardianPhone     String?
+  guardianEmail     String?
+  
+  // Previous Education
+  tenthBoard        String
+  tenthSchool       String
+  tenthYear         Int
+  tenthPercentage   Float
+  twelfthBoard      String?
+  twelfthSchool     String?
+  twelfthYear       Int?
+  twelfthPercentage Float?
+  
+  // Documents
+  profilePhoto      String?
+  signature         String?
+  documents         String?  // Store document URLs/paths as JSON string
+  
+  // Additional Information
+  hostelResident    Boolean  @default(false)
+  hostelBlock       String?
+  roomNumber        String?
+  transportMode     String?  // Bus, Private, Walking, etc.
+  medicalConditions String?
+  emergencyContact  String
+  emergencyPhone    String
+  
+  // System fields
+  isActive          Boolean  @default(true)
+  isVerified        Boolean  @default(false)
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+  
+  // Relations
+  enrollments       Enrollment[]
+  grades            Grade[]
+  attendance        Attendance[]
+}
+
+model FacultyProfile {
+  id                String   @id @default(uuid())
+  userId            String   @unique
+  user              User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  // Personal Information
+  firstName         String
+  lastName          String
+  middleName        String?
+  dateOfBirth       DateTime
+  gender            String
+  phoneNumber       String
+  alternatePhone    String?
+  
+  // Professional Information
+  employeeId        String   @unique
+  designation       String
+  department        String
+  joiningDate       DateTime
+  qualification     String
+  experience        Int      // in years
+  specialization    String?
+  
+  // Contact Information
+  officeRoom        String?
+  officePhone       String?
+  personalEmail     String?
+  
+  // System fields
+  isActive          Boolean  @default(true)
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+  
+  // Relations
+  courses           Course[]
+  grades            Grade[]
+}
+
+model Course {
+  id            String   @id @default(uuid())
+  code          String   @unique
+  name          String
+  credits       Int
+  semester      Int
+  branch        String
+  description   String?
+  syllabus      String?
+  
+  // Faculty assignment
+  facultyId     String?
+  faculty       FacultyProfile? @relation(fields: [facultyId], references: [id])
+  
+  // System fields
+  isActive      Boolean  @default(true)
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+  
+  // Relations
+  enrollments   Enrollment[]
+  grades        Grade[]
+  attendance    Attendance[]
+}
+
+model Enrollment {
+  id          String   @id @default(uuid())
+  studentId   String
+  courseId    String
+  
+  student     StudentProfile @relation(fields: [studentId], references: [id])
+  course      Course   @relation(fields: [courseId], references: [id])
+  
+  enrolledAt  DateTime @default(now())
+  status      String   @default("active") // active, dropped, completed
+  
+  @@unique([studentId, courseId])
+}
+
+model Grade {
+  id          String   @id @default(uuid())
+  studentId   String
+  courseId    String
+  facultyId   String
+  
+  student     StudentProfile @relation(fields: [studentId], references: [id])
+  course      Course   @relation(fields: [courseId], references: [id])
+  faculty     FacultyProfile @relation(fields: [facultyId], references: [id])
+  
+  examType    String   // Internal, Mid-term, Final, Assignment
+  marks       Float
+  maxMarks    Float
+  grade       String?
+  
+  examDate    DateTime
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+model Attendance {
+  id          String   @id @default(uuid())
+  studentId   String
+  courseId    String
+  
+  student     StudentProfile @relation(fields: [studentId], references: [id])
+  course      Course   @relation(fields: [courseId], references: [id])
+  
+  date        DateTime
+  status      String   // Present, Absent, Late
+  remarks     String?
+  
+  createdAt   DateTime @default(now())
+  
+  @@unique([studentId, courseId, date])
+}
+
+model Event {
+  id          Int      @id @default(autoincrement())
+  name        String
+  description String
+  date        DateTime
+  status      String   @default("pending") // pending, approved, rejected
+  clubName    String
+  venue       String?
+  capacity    Int?
+  
+  createdBy   User     @relation(fields: [userId], references: [id])
+  userId      String
+  
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+model Subject {
+  id    Int    @id @default(autoincrement())
+  name  String
+  code  String @unique
+}
+
+model SeatingPlan {
+  id        Int      @id @default(autoincrement())
+  room      String
+  rows      Int
+  cols      Int
+  plan      String
+  examDate  DateTime?
+  examName  String?
+  
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  createdBy User     @relation(fields: [userId], references: [id])
+  userId    String
+}
