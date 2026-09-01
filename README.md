@@ -39,10 +39,16 @@ npm run dev
 
 ## Features
 
--   **Role-Based Access**: Specialized dashboards for Students, Admins, Seating Managers, and Club Coordinators.
--   **Study Support**: Interactive syllabus viewer and mind map visualization.
--   **Examination Management**: Automated hall ticket generation with QR codes and seating plan randomization.
--   **Club Events**: Event proposal and approval workflow.
+-   **Role-Based Access**: JWT authentication, protected API routes, permission checks, and specialized dashboards for students, faculty, admins, seating managers, and club coordinators.
+-   **Study Support**: Upload a PDF syllabus, extract topics with NLP, and explore the generated interactive mind map.
+-   **Examination Management**: Printable hall tickets and randomized seating plans with database persistence and CSV export.
+-   **Club Events**: Students and coordinators submit event proposals; administrators approve or reject them.
+
+## Configuration
+
+The client uses `VITE_API_URL` when supplied and otherwise connects to `http://localhost:3000/api`. Set a strong `JWT_SECRET` for the server outside local development.
+
+Dependencies are installed from the lockfiles and are intentionally not committed. Run `npm install` in both `client` and `server` when using the manual startup instructions.
 
 ## Project Structure
 
