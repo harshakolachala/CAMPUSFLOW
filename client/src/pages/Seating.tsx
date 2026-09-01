@@ -35,7 +35,7 @@ const Seating: React.FC = () => {
         plan: seatingPlan,
         rows,
         cols,
-        userId: user?.id
+        examName: 'Semester Examination'
       });
       alert('Seating plan saved successfully!');
     } catch (err) {
@@ -60,7 +60,7 @@ const Seating: React.FC = () => {
     const url = URL.createObjectURL(blob);
     const link = document.createElement('a');
     link.href = url;
-    link.download = `Seating_${room.replace(/\\s+/g, '_')}.csv`;
+    link.download = `Seating_${room.replace(/\s+/g, '_')}.csv`;
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
