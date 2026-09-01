@@ -1,8 +1,14 @@
 import { Request, Response } from 'express';
 import prisma from '../lib/prisma';
+import { AuthRequest } from '../middleware/auth';
 
 export const saveSeatingPlan = async (req: Request, res: Response) => {
-  const { room, plan, rows, cols, userId } = req.body;
+  const { room, plan, rows, cols, examDate, examName } = req.body;
+  const userId = (req as AuthRequest).auth?.userId;
+
+  if (!room?.trim() || !Array.isArray(plan) || !Number.isInteger(rows) || !Number.isInteger(cols) || rows < 1 || cols < 1 || rows > 50 || cols > 50 || !userId) {
+    return res.status(400).json({ error: 'A valid room and seating grid are required' });
+  }
 
   try {
     const seating = await prisma.seatingPlan.create({
@@ -12,6 +18,8 @@ export const saveSeatingPlan = async (req: Request, res: Response) => {
         cols,
         plan: JSON.stringify(plan),
         userId,
+        examDate: examDate ? new Date(examDate) : null,
+        examName: examName?.trim() || null,
       },
     });
     res.json({ success: true, id: seating.id });
