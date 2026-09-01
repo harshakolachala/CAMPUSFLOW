@@ -3,6 +3,7 @@ import {
   Share2, Download, Plus, Upload, FileText, Brain, 
   Link, Eye, Zap, CheckCircle, AlertCircle, Loader, Clock
 } from 'lucide-react';
+import api from '@/lib/api';
 
 interface StudyResource {
   id: string;
@@ -317,6 +318,48 @@ const Study: React.FC = () => {
     fileInputRef.current?.click();
   };
 
+  const processUploadedPDF = async (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (!file) return;
+    if (file.type !== 'application/pdf' || file.size > 10 * 1024 * 1024) {
+      alert('Select a PDF file no larger than 10 MB.');
+      event.target.value = '';
+      return;
+    }
+    setIsProcessing(true);
+    setUploadProgress(10);
+    try {
+      const formData = new FormData();
+      formData.append('pdf', file);
+      formData.append('subjectName', selectedSubject.name);
+      const response = await api.post('/pdf/process', formData, {
+        onUploadProgress: progress => {
+          if (progress.total) setUploadProgress(Math.min(85, Math.round(progress.loaded * 85 / progress.total)));
+        },
+      });
+      const result = response.data.data;
+      const updatedSubjects = subjects.map(subject => subject.id === selectedSubject.id ? {
+        ...subject,
+        syllabusUploaded: true,
+        mindMapGenerated: true,
+        uploadedFile: file,
+        extractedTopics: result.topics.map((topic: { title: string }) => topic.title),
+        mindMapNodes: result.mindMapNodes as MindMapNode[],
+        processingStats: result.statistics,
+      } : subject);
+      setUploadProgress(100);
+      setSubjects(updatedSubjects);
+      setSelectedSubject(updatedSubjects.find(subject => subject.id === selectedSubject.id)!);
+      setActiveTab('mindmap');
+    } catch (error: any) {
+      alert(error.response?.data?.error || 'The PDF could not be processed.');
+    } finally {
+      setIsProcessing(false);
+      setTimeout(() => setUploadProgress(0), 1000);
+      event.target.value = '';
+    }
+  };
+
   const shareSubject = async () => {
     const text = `Subject: ${selectedSubject.name} (${selectedSubject.code}) - CAMPUSFLOW Study Support`;
     try {
@@ -376,7 +419,7 @@ const Study: React.FC = () => {
         ref={fileInputRef}
         type="file"
         accept=".pdf"
-        onChange={handleFileUpload}
+        onChange={processUploadedPDF}
         className="hidden"
       />
 

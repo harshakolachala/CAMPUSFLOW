@@ -47,6 +47,11 @@ const ProtectedRoute: React.FC<{ children: React.ReactNode }> = ({ children }) =
   return <>{children}</>;
 };
 
+const RoleRoute: React.FC<{ roles: string[]; children: React.ReactNode }> = ({ roles, children }) => {
+  const { user } = useAuth();
+  return user && roles.includes(user.role) ? <>{children}</> : <Navigate to="/app" replace />;
+};
+
 // Main app content
 const AppContent: React.FC = () => {
   const { loading } = useAuth();
@@ -73,13 +78,13 @@ const AppContent: React.FC = () => {
         <Route path="clubs" element={<Clubs />} />
         
         {/* Admin Routes */}
-        <Route path="users" element={<UserManagement />} />
-        <Route path="academic" element={<AcademicRecords />} />
-        <Route path="examinations" element={<ExaminationControl />} />
-        <Route path="hall-tickets" element={<HallTicketManagement />} />
-        <Route path="events" element={<EventOversight />} />
-        <Route path="reports" element={<ReportsAnalytics />} />
-        <Route path="settings" element={<SystemSettings />} />
+        <Route path="users" element={<RoleRoute roles={['admin']}><UserManagement /></RoleRoute>} />
+        <Route path="academic" element={<RoleRoute roles={['admin']}><AcademicRecords /></RoleRoute>} />
+        <Route path="examinations" element={<RoleRoute roles={['admin']}><ExaminationControl /></RoleRoute>} />
+        <Route path="hall-tickets" element={<RoleRoute roles={['admin']}><HallTicketManagement /></RoleRoute>} />
+        <Route path="events" element={<RoleRoute roles={['admin']}><EventOversight /></RoleRoute>} />
+        <Route path="reports" element={<RoleRoute roles={['admin']}><ReportsAnalytics /></RoleRoute>} />
+        <Route path="settings" element={<RoleRoute roles={['admin']}><SystemSettings /></RoleRoute>} />
         
         <Route path="*" element={<Navigate to="/app" replace />} />
       </Route>

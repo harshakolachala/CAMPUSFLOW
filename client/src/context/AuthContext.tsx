@@ -59,7 +59,8 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
       });
       
       const userData = response.data;
-      const token = userData.token || 'dummy_token'; // Use actual token from backend
+      const token = userData.token;
+      if (!token) throw new Error('Server did not return an authentication token');
       
       setUser(userData);
       
@@ -87,7 +88,8 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
       });
 
       const userData = response.data;
-      const token = userData.token || 'dummy_token'; // Use actual token from backend
+      const token = userData.token;
+      if (!token) throw new Error('Server did not return an authentication token');
       
       setUser(userData);
       

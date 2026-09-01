@@ -3,6 +3,8 @@ import { useAuth } from '@/context/AuthContext';
 import StudentDashboard from '@/components/dashboards/StudentDashboard';
 import FacultyDashboard from '@/components/dashboards/FacultyDashboard';
 import AdminDashboard from '@/components/dashboards/AdminDashboard';
+import Seating from '@/pages/Seating';
+import Clubs from '@/pages/Clubs';
 
 const Dashboard: React.FC = () => {
   const { user } = useAuth();
@@ -16,10 +18,9 @@ const Dashboard: React.FC = () => {
     case 'admin':
       return <AdminDashboard />;
     case 'seating_manager':
+      return <Seating />;
     case 'club_coordinator':
-      // For now, show admin dashboard for these roles
-      // You can create specific dashboards for these roles later
-      return <AdminDashboard />;
+      return <Clubs />;
     default:
       return (
         <div className="flex items-center justify-center h-96">

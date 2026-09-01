@@ -1,5 +1,6 @@
 import { Request, Response } from 'express';
 import prisma from '../lib/prisma';
+import { AuthRequest } from '../middleware/auth';
 
 export const getEvents = async (req: Request, res: Response) => {
   try {
@@ -18,15 +19,22 @@ export const getEvents = async (req: Request, res: Response) => {
 };
 
 export const createEvent = async (req: Request, res: Response) => {
-  const { name, description, date, clubName, userId } = req.body;
+  const { name, description, date, clubName, venue, capacity } = req.body;
+  const userId = (req as AuthRequest).auth?.userId;
+
+  if (!name?.trim() || !description?.trim() || !clubName?.trim() || !date || Number.isNaN(new Date(date).getTime()) || !userId) {
+    return res.status(400).json({ error: 'Valid name, description, club, and date are required' });
+  }
 
   try {
     const event = await prisma.event.create({
       data: {
-        name,
-        description,
+        name: name.trim(),
+        description: description.trim(),
         date: new Date(date),
-        clubName,
+        clubName: clubName.trim(),
+        venue: venue?.trim() || null,
+        capacity: capacity ? Number(capacity) : null,
         userId,
         status: 'pending',
       },
@@ -41,6 +49,8 @@ export const createEvent = async (req: Request, res: Response) => {
 export const updateEventStatus = async (req: Request, res: Response) => {
   const { id } = req.params;
   const { status } = req.body;
+
+  if (!['approved', 'rejected', 'pending'].includes(status)) return res.status(400).json({ error: 'Invalid event status' });
 
   try {
     const event = await prisma.event.update({

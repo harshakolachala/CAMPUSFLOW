@@ -3,6 +3,7 @@ import cors from 'cors';
 import authRoutes from './routes/authRoutes';
 import eventRoutes from './routes/eventRoutes';
 import seatingRoutes from './routes/seatingRoutes';
+import pdfRoutes from './routes/pdfRoutes';
 
 const app = express();
 const port = 3000;
@@ -15,6 +16,7 @@ app.use(express.urlencoded({ extended: true, limit: '10mb' }));
 app.use('/api/auth', authRoutes);
 app.use('/api/events', eventRoutes);
 app.use('/api/seating', seatingRoutes);
+app.use('/api/pdf', pdfRoutes);
 
 app.get('/api/health', (req, res) => {
   res.json({ status: 'ok', timestamp: new Date() });

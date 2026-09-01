@@ -141,7 +141,7 @@ class PDFProcessor {
     
     // Extract important terms
     const terms = doc.terms().out('array');
-    const importantTerms = terms.filter(term => 
+    const importantTerms = terms.filter((term: string) => 
       term.length > 4 && 
       /^[A-Z]/.test(term) && 
       !['The', 'This', 'That', 'These', 'Those'].includes(term)
